@@ -1,15 +1,16 @@
 import express from 'express';
 import 'express-async-errors';
 import dotenv from 'dotenv';
-import morgan from 'morgan';
 import api from './routes/api';
 import { errorHandler } from './middlewares/error-handler.middleware';
 import { mongoConnect } from './services/mongo';
+import { applySecurityMiddlewares } from './middlewares/security.middleware';
 
 dotenv.config();
 const app = express();
+app.set('trust proxy', 1);
+applySecurityMiddlewares(app);
 app.use(express.json());
-app.use(morgan('combined'));
 
 app.use('/api', api);
 

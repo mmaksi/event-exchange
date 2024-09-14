@@ -19,6 +19,8 @@ interface UserModel extends mongoose.Model<UserDoc> {
 interface UserDoc extends mongoose.Document {
   email: string;
   password: string;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: number;
 }
 
 const userSchema = new mongoose.Schema({
@@ -29,6 +31,14 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+  },
+  resetPasswordToken: {
+    type: String,
+    required: false,
+  },
+  resetPasswordExpires: {
+    type: Number,
+    required: false,
   },
 });
 
