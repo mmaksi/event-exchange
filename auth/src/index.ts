@@ -19,5 +19,7 @@ const PORT = process.env.PORT || 3000;
 
 const start = async () => {
   await mongoConnect();
-  app.listen(PORT, () => console.log(`Auth running on port ${PORT} :)`));
 };
+
+start();
+app.listen(PORT, () => console.log(`Auth running on port ${PORT} :)`));

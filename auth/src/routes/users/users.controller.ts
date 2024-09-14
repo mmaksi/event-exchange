@@ -8,7 +8,9 @@ export async function httpSignup(req: Request, res: Response) {
   if (!errors.isEmpty()) {
     throw new RequestValidationError(errors.array());
   }
-  res.status(200).json(await signUp());
+  const { email, password } = req.body;
+  const user = await signUp(email, password);
+  return res.status(201).json(user);
 }
 
 export async function httpSignin(req: Request, res: Response) {
