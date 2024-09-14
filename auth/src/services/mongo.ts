@@ -12,15 +12,10 @@ mongoose.connection.on('error', (err: Error) => {
   console.error(err);
 });
 
-async function mongoConnect() {
+export async function mongoConnect() {
   await mongoose.connect(MONGO_URL);
 }
 
-async function mongoDisconnect() {
+export async function mongoDisconnect() {
   await mongoose.disconnect();
-}
-
-module.exports = {
-  mongoConnect,
-  mongoDisconnect,
 }
