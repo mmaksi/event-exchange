@@ -7,8 +7,8 @@ import morgan from 'morgan';
 
 // Define rate limiting rules
 const rateLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 15 minutes
-  max: 1, // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
   message: 'Too many requests, please try again later.',
   handler: (req: Request, res: Response, next: NextFunction) => {
     throw new TooManyRequestsError();

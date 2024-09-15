@@ -23,24 +23,37 @@ interface UserDoc extends mongoose.Document {
   resetPasswordExpires?: number;
 }
 
-const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
+const userSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    resetPasswordToken: {
+      type: String,
+      required: false,
+    },
+    resetPasswordExpires: {
+      type: Number,
+      required: false,
+    },
   },
-  password: {
-    type: String,
-    required: true,
-  },
-  resetPasswordToken: {
-    type: String,
-    required: false,
-  },
-  resetPasswordExpires: {
-    type: Number,
-    required: false,
-  },
-});
+  {
+    toJSON: {
+      transform(doc, ret) {
+        delete ret.password;
+        delete ret.resetPasswordToken;
+        delete ret.resetPasswordExpires;
+        delete ret.__v;
+        ret.id = ret._id;
+      },
+    },
+  }
+);
 
 userSchema.pre('save', async function (done) {
   if (this.isModified('password')) {

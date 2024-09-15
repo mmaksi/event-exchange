@@ -14,13 +14,16 @@ export async function httpSignup(req: Request, res: Response) {
     throw new RequestValidationError(errors.array());
   }
   const { email, password, confirmPassword } = req.body;
-  const user = await signUp(email, password, confirmPassword);
+  const { user, userToken } = await signUp(email, password, confirmPassword);
+  // Store user's JWT in the cookie
+  req.session = {
+    jwt: userToken,
+  };
   return res.status(201).json(user);
 }
 
 export async function httpSignin(req: Request, res: Response) {
   const user = { id: 1, username: 'testUser' };
-  const token = jwt.sign(user, secretKey, { expiresIn: '1h' });
   res.status(200).json(await signIn());
 }
 

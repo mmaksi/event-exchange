@@ -1,10 +1,21 @@
-import { token } from 'morgan';
 import { BadRequestError } from '../../errors/bad-request-error';
 import { ServerError } from '../../errors/server-error';
 import { sendResetEmail } from '../../services/nodemailer';
 import { Password } from '../../services/password';
 import { User } from './users.mongo';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+
+interface AuthUser {
+  id: string;
+  email: string;
+}
+
+function generateAccessToken(user: AuthUser) {
+  return jwt.sign(user, process.env.ACCESS_TOKEN!, {
+    expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN!,
+  });
+}
 
 export async function signUp(email: string, password: string, confirmPassword: string) {
   if (password !== confirmPassword) throw new BadRequestError("Passwords don't match");
@@ -12,7 +23,11 @@ export async function signUp(email: string, password: string, confirmPassword: s
   if (existingUser) throw new BadRequestError('Email already in use');
   const user = User.build({ email, password });
   await user.save();
-  return user;
+  const userToken = generateAccessToken({
+    id: user.id,
+    email: user.email,
+  });
+  return { user, userToken };
 }
 
 export async function signIn() {
