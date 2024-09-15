@@ -19,6 +19,8 @@ export async function httpSignup(req: Request, res: Response) {
 }
 
 export async function httpSignin(req: Request, res: Response) {
+  const user = { id: 1, username: 'testUser' };
+  const token = jwt.sign(user, secretKey, { expiresIn: '1h' });
   res.status(200).json(await signIn());
 }
 
