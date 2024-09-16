@@ -17,6 +17,12 @@ function generateAccessToken(user: AuthUser) {
   });
 }
 
+function generateRefreshToken(user: AuthUser) {
+  return jwt.sign(user, process.env.REFRESH_TOKEN!, {
+    expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN!,
+  });
+}
+
 export async function signUp(email: string, password: string, confirmPassword: string) {
   if (password !== confirmPassword) throw new BadRequestError("Passwords don't match");
   const existingUser = await User.findOne({ email });
@@ -46,7 +52,7 @@ export async function forgotPassword(email: string) {
     const resetToken = crypto.randomBytes(32).toString('hex');
     const hashedToken = await Password.toHash(resetToken);
     user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    user.resetPasswordExpires = Date.now() + 3600000;
 
     await user.save();
 

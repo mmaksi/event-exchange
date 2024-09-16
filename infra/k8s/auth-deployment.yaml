@@ -16,11 +16,16 @@ spec:
         - name: auth
           image: markmaksi/auth:latest # Docker image
           env:
-            - name: JWT_KEY
+            - name: ACCESS_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: auth-secret
-                  key: JWT_KEY
+                  key: ACCESS_TOKEN
+            - name: ACCESS_TOKEN_EXPIRES_IN
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secret
+                  key: ACCESS_TOKEN_EXPIRES_IN
             - name: EMAIL_PASS
               valueFrom:
                 secretKeyRef:
