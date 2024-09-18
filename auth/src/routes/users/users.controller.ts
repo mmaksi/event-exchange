@@ -9,7 +9,6 @@ import {
 } from '../../models/users/users.model';
 import { validationResult } from 'express-validator';
 import { RequestValidationError } from '../../errors/request-validation-error';
-import { UnauthorizedError } from '../../errors/unauthorized-error';
 
 export async function httpSignup(req: Request, res: Response) {
   const errors = validationResult(req);
@@ -17,13 +16,13 @@ export async function httpSignup(req: Request, res: Response) {
     throw new RequestValidationError(errors.array());
   }
   const { email, password, confirmPassword } = req.body;
-  const { user, userAccessToken, userRefreshToken } = await signUp(
-    email,
-    password,
-    confirmPassword
-  );
-  req.session.accessToken = userAccessToken;
-  req.session.refreshToken = userRefreshToken;
+  const {
+    newUser: user,
+    userAccessToken,
+    userRefreshToken,
+  } = await signUp(email, password, confirmPassword);
+  req.session!.accessToken = userAccessToken;
+  req.session!.refreshToken = userRefreshToken;
   return res.status(201).json(user);
 }
 
@@ -38,8 +37,8 @@ export async function httpSignin(req: Request, res: Response) {
     password
   );
   // Store user's JWT in the cookie
-  req.session.accessToken = userAccessToken;
-  req.session.refreshToken = userRefreshToken;
+  req.session!.accessToken = userAccessToken;
+  req.session!.refreshToken = userRefreshToken;
   return res.status(200).json(existingUser);
 }
 
@@ -48,7 +47,7 @@ export async function httpGetCurrentUser(req: Request, res: Response) {
 }
 
 export async function httpSignOut(req: Request, res: Response) {
-  const refreshToken = req.session.refreshToken;
+  const refreshToken = req.session!.refreshToken;
   await signOut(refreshToken);
   // Clear the session after removing refresh token from the DB
   req.session = null;
@@ -75,10 +74,10 @@ export async function httpResetPassword(req: Request, res: Response) {
 }
 
 export async function httpRefreshToken(req: Request, res: Response) {
-  const userRefreshToken = req.session.refreshToken;
+  const userRefreshToken = req.session!.refreshToken;
   const { newAccessToken, newRefreshToken } = await refreshToken(userRefreshToken);
   // Update tokens in cookies
-  req.session.accessToken = newAccessToken;
-  req.session.refreshToken = newRefreshToken;
+  req.session!.accessToken = newAccessToken;
+  req.session!.refreshToken = newRefreshToken;
   return res.status(200).json({ message: 'Tokens refreshed' });
 }

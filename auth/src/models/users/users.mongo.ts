@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
 import { Password } from '../../services/password';
 
-interface IRefreshToken {
+export interface IrefreshTokensStoreItem {
+  userId: string;
   token: string;
-  lastRefreshedAt: number;
-  absoluteExpiry: number;
+  sessionStart: number;
+  expiresAt: number;
 }
 
 // An interface that describes the properties
@@ -27,7 +28,7 @@ interface UserDoc extends mongoose.Document {
   password: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: number;
-  refreshTokens: IRefreshToken[];
+  refreshTokens: IrefreshTokensStoreItem[];
 }
 
 const userSchema = new mongoose.Schema(
@@ -49,7 +50,14 @@ const userSchema = new mongoose.Schema(
       required: false,
     },
     refreshTokens: {
-      type: [String],
+      type: [
+        {
+          token: { type: String, required: true },
+          userId: { type: String, required: true },
+          sessionStart: { type: Number, required: true },
+          expiresAt: { type: Number, required: true },
+        },
+      ],
       required: false,
     },
   },
@@ -67,12 +75,11 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.pre('save', async function (done) {
+userSchema.pre('save', async function () {
   if (this.isModified('password')) {
     const hashed = await Password.toHash(this.get('password'));
     this.set('password', hashed);
   }
-  done();
 });
 
 userSchema.statics.build = (attrs: IUser) => {

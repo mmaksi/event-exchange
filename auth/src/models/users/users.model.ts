@@ -1,40 +1,37 @@
-import { token } from 'morgan';
 import { BadRequestError } from '../../errors/bad-request-error';
-import { NotFoundError } from '../../errors/not-found-error';
 import { ServerError } from '../../errors/server-error';
 import { UnauthorizedError } from '../../errors/unauthorized-error';
 import { sendResetEmail } from '../../services/nodemailer';
 import { Password } from '../../services/password';
-import { User } from './users.mongo';
+import { IrefreshTokensStoreItem, User } from './users.mongo';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-
-interface IrefreshTokensStoreItem {
-  userId: string;
-  token: string;
-  sessionStart: number;
-  expiresAt: number;
-}
 
 // TODO store refresh tokens in a redis database
 let refreshTokensStore = [] as IrefreshTokensStoreItem[];
 
 function generateAccessToken(id: string) {
-  return jwt.sign(id, process.env.ACCESS_TOKEN!, {
-    expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN!,
+  const accessTokenSecret = process.env.ACCESS_TOKEN;
+  if (!accessTokenSecret) {
+    throw new Error('Missing ACCESS_TOKEN environment variables.');
+  }
+  const accessToken = jwt.sign({ id }, accessTokenSecret, {
+    expiresIn: 5,
   });
+  return accessToken;
 }
 
 function generateRefreshToken(userId: string, sessionStart?: number) {
   const sessionIssuedAt = sessionStart || Math.floor(Date.now() / 1000); // Current time in seconds
-  const refreshToken = crypto.randomBytes(64).toString('hex');
+  const token = crypto.randomBytes(64).toString('hex');
   // Persist refresh tokens with associated sessionStart
-  refreshTokensStore.push({
+  const refreshToken = {
     userId,
-    token: refreshToken,
+    token,
     sessionStart: sessionIssuedAt,
     expiresAt: sessionIssuedAt + parseInt(process.env.REFRESH_TOKEN_EXPIRES_IN!, 10),
-  });
+  };
+  refreshTokensStore.push(refreshToken);
   return refreshToken;
 }
 
@@ -47,8 +44,8 @@ export async function signUp(email: string, password: string, confirmPassword: s
   const newUser = User.build({ email, password });
   await newUser.save();
 
-  const userAccessToken = generateAccessToken(newUser.id);
-  const userRefreshToken = generateRefreshToken(newUser.id);
+  const userAccessToken = generateAccessToken(JSON.stringify(newUser._id));
+  const userRefreshToken = generateRefreshToken(JSON.stringify(newUser._id));
 
   return { newUser, userAccessToken, userRefreshToken };
 }
@@ -87,7 +84,6 @@ export async function forgotPassword(email: string) {
       // Send the unhashed resetToken via email
       return await sendResetEmail(email, resetToken);
     } catch (error) {
-      console.log(error);
       throw new ServerError('Error sending email');
     }
   }
@@ -118,11 +114,7 @@ export async function refreshToken(userRefreshToken: IrefreshTokensStoreItem) {
 
   // Check if token exists in store
   const tokenData = refreshTokensStore.find((t) => t.userId === userRefreshToken.userId);
-  if (!tokenData) throw new UnauthorizedError('Invalid Refresh Token');
-
-  // Check if the token is expired
-  const tokenExpiration = tokenData.expiresAt;
-  if (tokenExpiration) throw new UnauthorizedError('Invalid Refresh Token');
+  if (!tokenData) throw new UnauthorizedError('Refresh token not found');
 
   // Calculate session duration
   const currentTime = Math.floor(Date.now() / 1000);
