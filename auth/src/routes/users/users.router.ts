@@ -6,16 +6,20 @@ import {
   httpSignOut,
   httpForgotPassword,
   httpResetPassword,
+  httpRefreshToken,
 } from './users.controller';
-import { signupValidator } from '../../middlewares/validator.middleware';
+import { signupValidator, signinValidator } from '../../middlewares/validator.middleware';
+import { currentUser } from '../../middlewares/current-user.middleware';
+import { requireAuth } from '../../middlewares/require-auth.middleware';
 
 const usersRouter = express.Router();
 
+usersRouter.get('/currentUser', currentUser, requireAuth, httpGetCurrentUser);
 usersRouter.post('/signup', signupValidator, httpSignup);
-usersRouter.post('/signin', httpSignin);
-usersRouter.get('/currentUser', httpGetCurrentUser);
-usersRouter.get('/signout', httpSignOut);
+usersRouter.post('/signin', signinValidator, httpSignin);
+usersRouter.post('/signout', httpSignOut);
 usersRouter.post('/forgot-password', httpForgotPassword);
 usersRouter.post('/reset-password/:token', httpResetPassword);
+usersRouter.post('/refresh-token', httpRefreshToken);
 
 export default usersRouter;

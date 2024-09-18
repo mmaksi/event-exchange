@@ -1,46 +1,73 @@
+import { token } from 'morgan';
 import { BadRequestError } from '../../errors/bad-request-error';
+import { NotFoundError } from '../../errors/not-found-error';
 import { ServerError } from '../../errors/server-error';
+import { UnauthorizedError } from '../../errors/unauthorized-error';
 import { sendResetEmail } from '../../services/nodemailer';
 import { Password } from '../../services/password';
 import { User } from './users.mongo';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 
-interface AuthUser {
-  id: string;
-  email: string;
+interface IrefreshTokensStoreItem {
+  userId: string;
+  token: string;
+  sessionStart: number;
+  expiresAt: number;
 }
 
-function generateAccessToken(user: AuthUser) {
-  return jwt.sign(user, process.env.ACCESS_TOKEN!, {
+// TODO store refresh tokens in a redis database
+let refreshTokensStore = [] as IrefreshTokensStoreItem[];
+
+function generateAccessToken(id: string) {
+  return jwt.sign(id, process.env.ACCESS_TOKEN!, {
     expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN!,
   });
 }
 
-function generateRefreshToken(user: AuthUser) {
-  return jwt.sign(user, process.env.REFRESH_TOKEN!, {
-    expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN!,
+function generateRefreshToken(userId: string, sessionStart?: number) {
+  const sessionIssuedAt = sessionStart || Math.floor(Date.now() / 1000); // Current time in seconds
+  const refreshToken = crypto.randomBytes(64).toString('hex');
+  // Persist refresh tokens with associated sessionStart
+  refreshTokensStore.push({
+    userId,
+    token: refreshToken,
+    sessionStart: sessionIssuedAt,
+    expiresAt: sessionIssuedAt + parseInt(process.env.REFRESH_TOKEN_EXPIRES_IN!, 10),
   });
+  return refreshToken;
 }
 
 export async function signUp(email: string, password: string, confirmPassword: string) {
   if (password !== confirmPassword) throw new BadRequestError("Passwords don't match");
+
   const existingUser = await User.findOne({ email });
   if (existingUser) throw new BadRequestError('Email already in use');
-  const user = User.build({ email, password });
-  await user.save();
-  const userToken = generateAccessToken({
-    id: user.id,
-    email: user.email,
-  });
-  return { user, userToken };
+
+  const newUser = User.build({ email, password });
+  await newUser.save();
+
+  const userAccessToken = generateAccessToken(newUser.id);
+  const userRefreshToken = generateRefreshToken(newUser.id);
+
+  return { newUser, userAccessToken, userRefreshToken };
 }
 
-export async function signIn() {
-  return;
+export async function signIn(email: string, password: string) {
+  const existingUser = await User.findOne({ email });
+  if (!existingUser || !(await Password.compare(password, existingUser.password))) {
+    throw new UnauthorizedError('Invalid credentials');
+  }
+  const userAccessToken = generateAccessToken(existingUser.id);
+  const userRefreshToken = generateRefreshToken(existingUser.id);
+
+  return { existingUser, userAccessToken, userRefreshToken };
 }
 
-export async function signOut() {
+export async function signOut(refreshToken: IrefreshTokensStoreItem) {
+  // Remove refresh token from store
+  const index = refreshTokensStore.indexOf(refreshToken);
+  refreshTokensStore.splice(index, 1);
   return;
 }
 
@@ -50,13 +77,14 @@ export async function forgotPassword(email: string) {
   if (user) {
     // Generate a reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const hashedToken = await Password.toHash(resetToken);
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
     user.resetPasswordToken = hashedToken;
     user.resetPasswordExpires = Date.now() + 3600000;
 
     await user.save();
 
     try {
+      // Send the unhashed resetToken via email
       return await sendResetEmail(email, resetToken);
     } catch (error) {
       console.log(error);
@@ -67,20 +95,54 @@ export async function forgotPassword(email: string) {
 }
 
 export async function resetPassword(token: string, newPassword: string) {
-  // Find the user by token
+  // Hash the incoming token
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  // Find the user by hashed token and expiration time
   const user = await User.findOne({
+    resetPasswordToken: hashedToken,
     resetPasswordExpires: { $gt: Date.now() },
   });
 
   if (!user) throw new BadRequestError('Invalid or expired token');
 
-  // Compare the token
-  const isMatch = await Password.compare(token, user.resetPasswordToken!);
-  if (!isMatch) throw new BadRequestError('Invalid or expired token');
-
   // Update password
-  user.password = await Password.toHash(newPassword);
+  user.password = newPassword;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpires = undefined;
   await user.save();
+}
+
+export async function refreshToken(userRefreshToken: IrefreshTokensStoreItem) {
+  if (!userRefreshToken) throw new UnauthorizedError('Refresh Token missing');
+
+  // Check if token exists in store
+  const tokenData = refreshTokensStore.find((t) => t.userId === userRefreshToken.userId);
+  if (!tokenData) throw new UnauthorizedError('Invalid Refresh Token');
+
+  // Check if the token is expired
+  const tokenExpiration = tokenData.expiresAt;
+  if (tokenExpiration) throw new UnauthorizedError('Invalid Refresh Token');
+
+  // Calculate session duration
+  const currentTime = Math.floor(Date.now() / 1000);
+  const sessionDuration = currentTime - tokenData.sessionStart;
+
+  if (currentTime > tokenData.expiresAt) {
+    // Session has expired; require re-authentication
+    // Remove the expired refresh token from the store
+    const oldRefreshToken = refreshTokensStore.indexOf(userRefreshToken);
+    refreshTokensStore.splice(oldRefreshToken, 1);
+    throw new UnauthorizedError('Session has expired. Please log in again.');
+  }
+
+  // Generate new tokens
+  const newAccessToken = generateAccessToken(tokenData.userId);
+  const newRefreshToken = generateRefreshToken(tokenData.userId, tokenData.sessionStart);
+
+  // Remove old refresh token
+  const oldRefreshToken = refreshTokensStore.indexOf(userRefreshToken);
+  refreshTokensStore.splice(oldRefreshToken, 1);
+
+  return { newAccessToken, newRefreshToken };
 }

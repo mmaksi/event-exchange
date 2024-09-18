@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 import { Password } from '../../services/password';
 
+interface IRefreshToken {
+  token: string;
+  lastRefreshedAt: number;
+  absoluteExpiry: number;
+}
+
 // An interface that describes the properties
 // that are requried to create a new User
 interface IUser {
@@ -21,6 +27,7 @@ interface UserDoc extends mongoose.Document {
   password: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: number;
+  refreshTokens: IRefreshToken[];
 }
 
 const userSchema = new mongoose.Schema(
@@ -41,15 +48,20 @@ const userSchema = new mongoose.Schema(
       type: Number,
       required: false,
     },
+    refreshTokens: {
+      type: [String],
+      required: false,
+    },
   },
   {
     toJSON: {
       transform(doc, ret) {
+        ret.id = ret._id;
+        delete ret._id;
         delete ret.password;
         delete ret.resetPasswordToken;
         delete ret.resetPasswordExpires;
         delete ret.__v;
-        ret.id = ret._id;
       },
     },
   }
