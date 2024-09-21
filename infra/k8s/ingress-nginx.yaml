@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: ingress-service
   annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/use-regex: 'true'
 spec:
   ingressClassName: nginx
   rules:
@@ -15,5 +15,12 @@ spec:
             backend:
               service:
                 name: auth-service
+                port:
+                  number: 3000
+          - path: /?(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: client-service
                 port:
                   number: 3000

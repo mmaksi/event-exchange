@@ -14,7 +14,7 @@ import { requireAuth } from '../../middlewares/require-auth.middleware';
 
 const usersRouter = express.Router();
 
-usersRouter.get('/currentUser', currentUser, requireAuth, httpGetCurrentUser);
+usersRouter.get('/current-user', currentUser, requireAuth, httpGetCurrentUser);
 usersRouter.post('/signup', signupValidator, httpSignup);
 usersRouter.post('/signin', signinValidator, httpSignin);
 usersRouter.post('/signout', httpSignOut);
