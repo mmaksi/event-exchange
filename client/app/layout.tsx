@@ -3,6 +3,7 @@ import './globals.css';
 import Navbar from '@/components/navbar';
 import { Poppins } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
+import Footer from '@/components/Footer';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className={`${poppins.className} antialiased flex flex-col min-h-screen`}>
         <Navbar />
         <div className="flex flex-grow py-8">{children}</div>
+        <Footer />
         <Toaster />
       </body>
     </html>

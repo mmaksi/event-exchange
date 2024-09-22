@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
 
 interface IUser {
   id: string;
@@ -8,7 +7,6 @@ interface IUser {
 
 const useCurrentUser = () => {
   const [currentUser, setCurrentUser] = useState<IUser | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -16,7 +14,7 @@ const useCurrentUser = () => {
         const { data } = await axios.get('/api/users/current-user');
         if (data.currentUser?.id) setCurrentUser(data.currentUser);
       } catch (error) {
-        router.push('/signup');
+        console.error(error);
       }
     };
 
