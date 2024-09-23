@@ -2,10 +2,9 @@ import express from 'express';
 import 'express-async-errors';
 import dotenv from 'dotenv';
 import api from './routes/api';
-import { errorHandler } from './middlewares/error-handler.middleware';
 import { mongoConnect } from './services/mongo';
-import { applySecurityMiddlewares } from './middlewares/security.middleware';
 import cookieSession from 'cookie-session';
+import { applySecurityMiddlewares, errorHandler } from '@eventexchange/common';
 
 dotenv.config();
 const app = express();
@@ -29,7 +28,7 @@ app.use(errorHandler);
 
 const start = async () => {
   if (!process.env.ACCESS_TOKEN) throw new Error('ACCESS_TOKEN must be defined');
-  // if (!process.env.REFRESH_TOKEN) throw new Error('REFRESH_TOKEN must be defined');
+  if (!process.env.MONGO_URL) throw new Error('MONGO_URL must be defined');
   if (!process.env.EMAIL_USER) throw new Error('EMAIL_USER must be defined');
   if (!process.env.EMAIL_PASS) throw new Error('EMAIL_PASS must be defined');
   if (!process.env.ACCESS_TOKEN_EXPIRES_IN)

@@ -8,9 +8,12 @@ import {
   httpResetPassword,
   httpRefreshToken,
 } from './users.controller';
-import { signupValidator, signinValidator } from '../../middlewares/validator.middleware';
-import { currentUser } from '../../middlewares/current-user.middleware';
-import { requireAuth } from '../../middlewares/require-auth.middleware';
+import {
+  currentUser,
+  requireAuth,
+  signinValidator,
+  signupValidator,
+} from '@eventexchange/common';
 
 const usersRouter = express.Router();
 

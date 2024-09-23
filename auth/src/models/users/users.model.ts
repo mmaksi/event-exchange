@@ -1,6 +1,4 @@
-import { BadRequestError } from '../../errors/bad-request-error';
-import { ServerError } from '../../errors/server-error';
-import { UnauthorizedError } from '../../errors/unauthorized-error';
+import { BadRequestError, ServerError, UnauthorizedError } from '@eventexchange/common';
 import { sendResetEmail } from '../../services/nodemailer';
 import { Password } from '../../services/password';
 import { IrefreshTokensStoreItem, User } from './users.mongo';

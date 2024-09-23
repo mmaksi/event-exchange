@@ -8,7 +8,7 @@ import {
   signOut,
 } from '../../models/users/users.model';
 import { validationResult } from 'express-validator';
-import { RequestValidationError } from '../../errors/request-validation-error';
+import { RequestValidationError } from '@eventexchange/common';
 
 export async function httpSignup(req: Request, res: Response) {
   const errors = validationResult(req);
