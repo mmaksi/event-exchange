@@ -14,7 +14,7 @@ function generateAccessToken(id: string) {
     throw new Error('Missing ACCESS_TOKEN environment variables.');
   }
   const accessToken = jwt.sign({ id }, accessTokenSecret, {
-    expiresIn: 5,
+    expiresIn: '15m',
   });
   return accessToken;
 }

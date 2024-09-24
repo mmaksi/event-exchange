@@ -1,30 +1,5 @@
-import express from 'express';
-import 'express-async-errors';
-import dotenv from 'dotenv';
-import api from './routes/api';
+import { app } from './app';
 import { mongoConnect } from './services/mongo';
-import cookieSession from 'cookie-session';
-import { applySecurityMiddlewares, errorHandler } from '@eventexchange/common';
-
-dotenv.config();
-const app = express();
-
-// Important middlewares
-app.set('trust proxy', 1);
-app.use(
-  cookieSession({
-    signed: false,
-    secure: true,
-  })
-);
-applySecurityMiddlewares(app);
-app.use(express.json());
-
-// Router mounting
-app.use('/api', api);
-
-// Error handling
-app.use(errorHandler);
 
 const start = async () => {
   if (!process.env.ACCESS_TOKEN) throw new Error('ACCESS_TOKEN must be defined');
