@@ -26,9 +26,7 @@ export const currentUser = (req: Request, res: Response, next: NextFunction) => 
       process.env.ACCESS_TOKEN!
     ) as UserPayload;
     req.currentUser = payload;
-  } catch (error) {
-    throw new ForbiddenError();
-  }
+  } catch (error) {}
 
   next();
 };
