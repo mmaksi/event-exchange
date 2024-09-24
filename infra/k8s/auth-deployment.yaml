@@ -16,6 +16,8 @@ spec:
         - name: auth
           image: markmaksi/auth:latest # Docker image
           env:
+            - name: MONGO_URL
+              value: mongodb://auth-mongo-service:27017/auth
             - name: ACCESS_TOKEN
               valueFrom:
                 secretKeyRef:
