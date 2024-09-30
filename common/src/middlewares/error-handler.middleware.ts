@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { CustomError } from '../errors/custom-error';
-import chalk from 'chalk';
 
 export const errorHandler = (
   err: Error,
@@ -11,6 +10,6 @@ export const errorHandler = (
   if (err instanceof CustomError) {
     return res.status(err.statusCode).send({ errors: err.serializeErrors() });
   }
-  console.error(chalk.red.bold(err));
+  console.error(err);
   return res.status(400).send({ message: 'Something went wrong' });
 };
