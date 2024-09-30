@@ -24,7 +24,7 @@ export async function httpGetTicket(req: Request, res: Response) {
 
 export async function httpCreateTicket(req: Request, res: Response) {
   const { title, price } = req.body as TicketBody;
-  const currentUserId = req.currentUser!.payload.id;
+  const currentUserId = req.currentUser!.id;
   const ticket = await createTicket(title, price, currentUserId);
   return res.status(201).json(ticket);
 }
@@ -32,7 +32,7 @@ export async function httpCreateTicket(req: Request, res: Response) {
 export async function httpUpdateTicket(req: Request, res: Response) {
   const { id: ticketId } = req.params;
   const payload = req.body as TicketBody;
-  const ticketCreator = req.currentUser!.payload.id;
+  const ticketCreator = req.currentUser!.id;
 
   const ticket = await updateTicket(ticketId, ticketCreator, payload);
   return res.status(200).json(ticket);

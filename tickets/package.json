@@ -16,7 +16,6 @@
       "./src/test/setup.ts"
     ]
   },
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mmaksi/event-exchange.git"
