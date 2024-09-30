@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import { app } from './app';
 import { mongoConnect } from './services/mongo';
 
@@ -12,7 +11,7 @@ const start = async () => {
   // if (!process.env.REFRESH_TOKEN_EXPIRES_IN)
   //   throw new Error('REFRESH_TOKEN_EXPIRES_IN must be defined');
   await mongoConnect();
-  app.listen(3000, () => console.log(chalk.green('Auth service running on port 3000')));
+  app.listen(3000, () => console.log('Auth service running on port 3000'));
 };
 
 start();
