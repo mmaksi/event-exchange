@@ -145,7 +145,6 @@ describe('Tickets service', () => {
 
     it('Return 401 if the user does not own the ticket', async () => {
       const response = await createTicket();
-
       await request(app)
         .put(`/api/tickets/${response.body.id}`)
         .set('Cookie', global.signin())

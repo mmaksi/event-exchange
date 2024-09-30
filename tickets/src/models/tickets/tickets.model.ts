@@ -27,7 +27,10 @@ export async function updateTicket(
   const ticket = await Ticket.findById(ticketId);
   if (!ticket) throw new NotFoundError();
   const ticketOwner = ticket.userId;
-  if (ticketOwner !== ticketCreator)
+  if (
+    ticketOwner !== ticketCreator ||
+    JSON.parse(JSON.stringify(ticketOwner)) !== ticketCreator
+  )
     throw new UnauthorizedError('Not authorized to update this ticket');
   ticket.set(payload);
   await ticket.save();

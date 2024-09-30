@@ -53,7 +53,7 @@ global.signin = () => {
     expiresAt: sessionIssuedAt + parseInt('30d', 10),
   };
   // Create the JWT!
-  const accessToken = jwt.sign({ payload, refreshToken }, process.env.ACCESS_TOKEN!);
+  const accessToken = jwt.sign({ id: userId }, process.env.ACCESS_TOKEN!);
   // Build session Object. { jwt: MY_JWT }
   const session = { accessToken };
   // Turn that session into JSON
