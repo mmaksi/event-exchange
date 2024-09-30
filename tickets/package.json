@@ -33,8 +33,9 @@
   },
   "homepage": "https://github.com/mmaksi/event-exchange#readme",
   "dependencies": {
-    "@eventexchange/common": "^1.0.1",
+    "@eventexchange/common": "^1.0.7",
     "bcryptjs": "^2.4.3",
+    "chalk": "^5.3.0",
     "cookie-session": "^2.1.0",
     "csurf": "^1.11.0",
     "dotenv": "^16.4.5",

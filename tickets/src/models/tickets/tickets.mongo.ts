@@ -1,62 +1,39 @@
 import mongoose from 'mongoose';
 
-export interface IrefreshTokensStoreItem {
-  userId: string;
-  token: string;
-  sessionStart: number;
-  expiresAt: number;
-}
-
 // An interface that describes the properties
 // that are requried to create a new User
-interface IUser {
-  email: string;
-  password: string;
+interface ITicket {
+  title: string;
+  price: number;
+  userId: string;
 }
 
 // An interface that describes the properties
 // that a User Model has
-interface UserModel extends mongoose.Model<UserDoc> {
-  build(attrs: IUser): UserDoc;
+interface TicketModel extends mongoose.Model<TicketDoc> {
+  build(attrs: ITicket): TicketDoc;
 }
 
 // An interface that describes the properties
 // that a User Document has
-interface UserDoc extends mongoose.Document {
-  email: string;
-  password: string;
-  resetPasswordToken?: string;
-  resetPasswordExpires?: number;
-  refreshTokens: IrefreshTokensStoreItem[];
+interface TicketDoc extends mongoose.Document {
+  title: string;
+  price: Number;
+  userId: string;
 }
 
-const userSchema = new mongoose.Schema(
+const ticketSchema = new mongoose.Schema(
   {
-    email: {
+    title: {
       type: String,
       required: true,
     },
-    password: {
-      type: String,
-      required: true,
-    },
-    resetPasswordToken: {
-      type: String,
-      required: false,
-    },
-    resetPasswordExpires: {
+    price: {
       type: Number,
-      required: false,
+      required: true,
     },
-    refreshTokens: {
-      type: [
-        {
-          token: { type: String, required: true },
-          userId: { type: String, required: true },
-          sessionStart: { type: Number, required: true },
-          expiresAt: { type: Number, required: true },
-        },
-      ],
+    userId: {
+      type: String,
       required: false,
     },
   },
@@ -65,19 +42,16 @@ const userSchema = new mongoose.Schema(
       transform(doc, ret) {
         ret.id = ret._id;
         delete ret._id;
-        delete ret.password;
-        delete ret.resetPasswordToken;
-        delete ret.resetPasswordExpires;
         delete ret.__v;
       },
     },
   }
 );
 
-userSchema.statics.build = (attrs: IUser) => {
-  return new User(attrs);
+ticketSchema.statics.build = (attrs: ITicket) => {
+  return new Ticket(attrs);
 };
 
-const User = mongoose.model<UserDoc, UserModel>('User', userSchema);
+const Ticket = mongoose.model<TicketDoc, TicketModel>('Ticket', ticketSchema);
 
-export { User };
+export { Ticket };

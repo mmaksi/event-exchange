@@ -1,23 +1,32 @@
 import express from 'express';
 import {
+  httpGetAllTickets,
+  httpGetTicket,
   httpCreateTicket,
-  httpSignin,
-  httpGetCurrentUser,
-  httpSignOut,
-  httpForgotPassword,
-  httpResetPassword,
-  httpRefreshToken,
+  httpUpdateTicket,
 } from './tickets.controller';
-import { requireAuth } from '@eventexchange/common';
-
+import { requireAuth, validateRequest } from '@eventexchange/common';
+import {
+  createTicketValidator,
+  updateTicketValidator,
+} from '../../middlewares/request-validator';
 const ticketsRouter = express.Router();
 
-ticketsRouter.post('/', requireAuth, httpCreateTicket);
-// ticketsRouter.post('/', currentUser, requireAuth, httpGetCurrentUser);
-// ticketsRouter.post('/signup', signupValidator, httpSignup);
-// ticketsRouter.post('/signin', signinValidator, httpSignin);
-// ticketsRouter.post('/forgot-password', httpForgotPassword);
-// ticketsRouter.post('/reset-password/:token', httpResetPassword);
-// ticketsRouter.post('/refresh-token', httpRefreshToken);
+ticketsRouter.get('/', httpGetAllTickets);
+ticketsRouter.get('/:id', httpGetTicket);
+ticketsRouter.post(
+  '/',
+  requireAuth,
+  createTicketValidator,
+  validateRequest,
+  httpCreateTicket
+);
+ticketsRouter.put(
+  '/:id',
+  requireAuth,
+  updateTicketValidator,
+  validateRequest,
+  httpUpdateTicket
+);
 
 export default ticketsRouter;

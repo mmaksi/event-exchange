@@ -3,9 +3,10 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { app } from '../app';
+import crypto from 'crypto';
 
 declare global {
-  var signin: () => Promise<string[]>;
+  var signin: () => string[];
 }
 
 let mongo: MongoMemoryServer;
@@ -38,13 +39,23 @@ afterAll(async () => {
   await mongoose.connection.close();
 });
 
-global.signin = async () => {
-  // Build a JWT payload.  { id, email }
-  const payload = { id: '1', email: 'test@test.com' };
+global.signin = () => {
+  // Build a JWT payload.  { id }
+  const userId = new mongoose.Types.ObjectId().toHexString();
+  const payload = { id: userId };
+  const sessionIssuedAt = Math.floor(Date.now() / 1000); // Current time in seconds
+  const token = crypto.randomBytes(64).toString('hex');
+  // Persist refresh tokens with associated sessionStart
+  const refreshToken = {
+    userId,
+    token,
+    sessionStart: sessionIssuedAt,
+    expiresAt: sessionIssuedAt + parseInt('30d', 10),
+  };
   // Create the JWT!
-  const token = jwt.sign(payload, process.env.JWT_KEY!);
+  const accessToken = jwt.sign({ payload, refreshToken }, process.env.ACCESS_TOKEN!);
   // Build session Object. { jwt: MY_JWT }
-  const session = { jwt: token };
+  const session = { accessToken };
   // Turn that session into JSON
   const sessionJSON = JSON.stringify(session);
   // Take JSON and encode it as base64
