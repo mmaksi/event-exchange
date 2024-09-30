@@ -20,7 +20,7 @@ function generateAccessToken(id: string) {
 }
 
 function generateRefreshToken(userId: string, sessionStart?: number) {
-  const sessionIssuedAt = sessionStart || Math.floor(Date.now() / 1000); // Current time in seconds
+  const sessionIssuedAt = sessionStart || Math.floor(Date.now() / 1000);
   const token = crypto.randomBytes(64).toString('hex');
   // Persist refresh tokens with associated sessionStart
   const refreshToken = {
