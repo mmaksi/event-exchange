@@ -1,10 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { ForbiddenError } from '../errors/forbidden-error';
 
 interface UserPayload {
-  id: string;
-  email: string;
+  payload: { id: string };
+  refreshToken: {
+    userId: string;
+    token: string;
+    sessionStart: number;
+    expiresAt: number;
+  };
+  iat: number;
 }
 
 declare global {
