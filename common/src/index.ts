@@ -12,5 +12,4 @@ export * from './middlewares/error-handler.middleware';
 export * from './middlewares/require-auth.middleware';
 export * from './middlewares/security.middleware';
 export * from './middlewares/current-user.middleware';
-export * from './middlewares/request-validator.middleware';
 export * from './middlewares/validate-request.middleware';
