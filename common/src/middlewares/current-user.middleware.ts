@@ -2,13 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 interface UserPayload {
-  payload: { id: string };
-  refreshToken: {
-    userId: string;
-    token: string;
-    sessionStart: number;
-    expiresAt: number;
-  };
+  id: string;
+  exp: number;
   iat: number;
 }
 
