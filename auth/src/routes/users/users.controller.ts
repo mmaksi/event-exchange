@@ -1,20 +1,14 @@
 import { Request, Response } from 'express';
 import {
-  signIn,
   signUp,
+  signIn,
+  signOut,
   forgotPassword,
   resetPassword,
   refreshToken,
-  signOut,
 } from '../../models/users/users.model';
-import { validationResult } from 'express-validator';
-import { RequestValidationError } from '@eventexchange/common';
 
 export async function httpSignup(req: Request, res: Response) {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    throw new RequestValidationError(errors.array());
-  }
   const { email, password, confirmPassword } = req.body;
   const {
     newUser: user,
@@ -27,10 +21,6 @@ export async function httpSignup(req: Request, res: Response) {
 }
 
 export async function httpSignin(req: Request, res: Response) {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    throw new RequestValidationError(errors.array());
-  }
   const { email, password } = req.body;
   const { existingUser, userAccessToken, userRefreshToken } = await signIn(
     email,

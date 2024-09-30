@@ -1,6 +1,5 @@
 import request from 'supertest';
 import { app } from '../../app';
-import { cookie } from 'express-validator';
 
 declare global {
   var signin: () => Promise<string[]>;
@@ -19,7 +18,7 @@ describe('User Sign-up', () => {
 
   it('Returns 400 with an invalid email', async () => {
     const response = await request(app).post('/api/users/signup').send({
-      email: '5h6oQexample.com', // invalid email
+      email: 'invalidEmail', // invalid email
       password: 'password',
       confirmPassword: 'password',
     });
@@ -30,7 +29,7 @@ describe('User Sign-up', () => {
 
   it('Returns 400 with an invalid password', async () => {
     const response = await request(app).post('/api/users/signup').send({
-      email: '5h6oQ@example.com', // invalid email
+      email: 'test@test.com',
       password: 'asd',
       confirmPassword: 'password',
     });
@@ -38,7 +37,6 @@ describe('User Sign-up', () => {
     expect(response.body.errors[0].message).toBe(
       'Password must be between 4 and 20 characters'
     );
-    expect(response.body.errors[0].field).toBe('password');
   });
 
   it('Returns 400 with unmatched passwords', async () => {

@@ -8,18 +8,17 @@ import {
   httpResetPassword,
   httpRefreshToken,
 } from './users.controller';
+import { currentUser, requireAuth, validateRequest } from '@eventexchange/common';
 import {
-  currentUser,
-  requireAuth,
   signinValidator,
   signupValidator,
-} from '@eventexchange/common';
+} from '../../middlewares/request-validator.middleware';
 
 const usersRouter = express.Router();
 
 usersRouter.get('/current-user', currentUser, requireAuth, httpGetCurrentUser);
-usersRouter.post('/signup', signupValidator, httpSignup);
-usersRouter.post('/signin', signinValidator, httpSignin);
+usersRouter.post('/signup', signupValidator, validateRequest, httpSignup);
+usersRouter.post('/signin', signinValidator, validateRequest, httpSignin);
 usersRouter.post('/signout', httpSignOut);
 usersRouter.post('/forgot-password', httpForgotPassword);
 usersRouter.post('/reset-password/:token', httpResetPassword);
