@@ -13,3 +13,9 @@ export * from './middlewares/require-auth.middleware';
 export * from './middlewares/security.middleware';
 export * from './middlewares/current-user.middleware';
 export * from './middlewares/validate-request.middleware';
+
+export * from './events/nats/nats-listener';
+export * from './events/nats/nats-publisher';
+export * from './events/nats/subjects';
+export * from './events/nats/messages/ticket-created.message';
+export * from './events/nats/messages/ticket-updated.message';
