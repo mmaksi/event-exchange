@@ -17,21 +17,19 @@ interface Message {
 }
 
 export abstract class Listener<T extends Message> {
-  private nc!: NatsConnection;
-  private jsm!: JetStreamManager;
-  private js!: JetStreamClient;
   private sc = StringCodec();
   abstract subject: T['subject'];
   abstract onMessage(data: T['data']): void;
   abstract stream: string;
   abstract durableName: string;
 
-  constructor() {}
+  constructor(
+    private nc: NatsConnection,
+    private js: JetStreamClient,
+    private jsm: JetStreamManager
+  ) {}
 
   private async buildClients() {
-    this.nc = await connect();
-    this.jsm = await this.nc.jetstreamManager();
-    this.js = this.nc.jetstream();
     const clientId = this.nc.info?.client_id as number;
     console.log(`Consumer ${clientId} connected to NATS server`);
   }

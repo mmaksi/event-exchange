@@ -17,11 +17,14 @@ interface Message {
 }
 
 export abstract class Publisher<T extends Message> {
-  private nc!: NatsConnection;
-  private jsm!: JetStreamManager;
-  private js!: JetStreamClient;
   private sc = StringCodec();
   abstract subject: T['subject'];
+
+  constructor(
+    private nc: NatsConnection,
+    private js: JetStreamClient,
+    private jsm: JetStreamManager
+  ) {}
 
   private async buildClients() {
     this.nc = await connect();
