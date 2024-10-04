@@ -29,11 +29,6 @@ export abstract class Listener<T extends Message> {
     private jsm: JetStreamManager
   ) {}
 
-  private async buildClients() {
-    const clientId = this.nc.info?.client_id as number;
-    console.log(`Consumer ${clientId} connected to NATS server`);
-  }
-
   private async createConsumer() {
     const consumerConfig = {
       durable_name: this.durableName,
@@ -74,30 +69,14 @@ export abstract class Listener<T extends Message> {
     }
   }
 
-  async consume() {
-    await this.buildClients();
-    await this.createConsumer();
-    const consumerMessages = await this.getConsumerMessages();
-    await this.processConsumerMessages(consumerMessages);
-
-    // TODO test SIGINT and SIGTERM
-    process.on('SIGINT', async () => {
-      console.info('Received SIGINT. Shutting down...');
-      await this.nc.drain();
-      console.log('NATS connection drained and closed');
-      process.exit(0);
-    });
-
-    process.on('SIGTERM', async () => {
-      console.info('Received SIGTERM. Shutting down...');
-      await this.nc.drain();
-      console.log('NATS connection drained and closed');
-      process.exit(0);
-    });
-  }
-
   private parseMessage(msg: JsMsg) {
     const data = this.sc.decode(msg.data);
     return JSON.parse(data.toString());
+  }
+
+  async consume() {
+    await this.createConsumer();
+    const consumerMessages = await this.getConsumerMessages();
+    await this.processConsumerMessages(consumerMessages);
   }
 }

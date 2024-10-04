@@ -19,43 +19,37 @@ interface Message {
 export abstract class Publisher<T extends Message> {
   private sc = StringCodec();
   abstract subject: T['subject'];
+  abstract stream: string;
 
-  constructor(
-    private nc: NatsConnection,
-    private js: JetStreamClient,
-    private jsm: JetStreamManager
-  ) {}
-
-  private async buildClients() {
-    this.nc = await connect();
-    this.jsm = await this.nc.jetstreamManager();
-    this.js = this.nc.jetstream();
-    const clientId = this.nc.info?.client_id as number;
-    console.log(`Publisher ${clientId} connected to NATS server`);
-  }
+  constructor(private js: JetStreamClient, private jsm: JetStreamManager) {}
 
   private async createPublisher() {
     try {
-      await this.jsm.streams.info('orders');
-      console.log(`Stream ${'orders'} already exists`);
+      await this.jsm.streams.info(this.stream);
+      console.log(`Stream ${this.stream} already exists`);
     } catch (err) {
       await this.jsm.streams.add({
-        name: 'orders',
-        subjects: ['order.created'],
+        name: this.stream,
+        subjects: [this.subject],
         retention: RetentionPolicy.Workqueue,
         max_consumers: -1, // Unlimited consumers
         max_msgs: -1, // Unlimited messages
         max_bytes: -1, // Unlimited bytes
         discard: DiscardPolicy.Old,
       });
-      console.log(`Stream ${'orders'} created`);
+      console.log(`Stream ${this.stream} created`);
     }
   }
 
   async publish(data: T['data']) {
+    await this.createPublisher();
     const sc = StringCodec();
     const stringifiedData = JSON.stringify(data);
-    const pa = await this.js.publish(this.subject, this.sc.encode(stringifiedData));
-    console.log(`Message published and stored in stream: ${pa.stream}`);
+    try {
+      const pa = await this.js.publish(this.subject, this.sc.encode(stringifiedData));
+      console.log(`Message published and stored in stream: ${pa.stream}`);
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
