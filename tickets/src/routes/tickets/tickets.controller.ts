@@ -25,7 +25,6 @@ export async function httpGetTicket(req: Request, res: Response) {
 export async function httpCreateTicket(req: Request, res: Response) {
   const { title, price } = req.body as TicketBody;
   const currentUserId = req.currentUser!.id;
-  console.log(req.currentUser);
   const ticket = await createTicket(title, price, currentUserId);
   return res.status(201).json(ticket);
 }

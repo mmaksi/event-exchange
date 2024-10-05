@@ -16,6 +16,16 @@ spec:
         - name: tickets
           image: markmaksi/tickets:latest # Docker image
           env:
+            - name: NATS_URL
+              value: http://nats-service:4222
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ACCESS_TOKEN
+              value: fsnjd37KSr4und58isMnX
+            - name: ACCESS_TOKEN_EXPIRES_IN
+              value: 15m
             - name: MONGO_URL
               value: mongodb://tickets-mongo-service:27017/tickets
 ---

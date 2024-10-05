@@ -2,8 +2,9 @@ const request = require('supertest');
 const { app } = require('../../app');
 const { Ticket } = require('../../models/tickets/tickets.mongo');
 const { default: mongoose } = require('mongoose');
+const { natsWrapper } = require('../../services/nats-wrapper');
 
-const createTicket = (cookie) => {
+const createTicket = async (cookie) => {
   const title = 'New York Event';
   const price = 10;
   return request(app)
@@ -123,6 +124,11 @@ describe('Tickets service', () => {
       expect(tickets[0].price).toEqual(10);
       expect(tickets[0].title).toEqual(title);
     });
+
+    it('Publishes an event', async () => {
+      await createTicket();
+      expect(natsWrapper.jsClient.publish).toHaveBeenCalled();
+    });
   });
 
   describe('PUT /api/tickets', () => {
@@ -197,6 +203,22 @@ describe('Tickets service', () => {
 
       expect(ticketesponse.body.title).toEqual('London Event');
       expect(ticketesponse.body.price).toEqual(25);
+    });
+
+    it('Publishes an event', async () => {
+      const cookie = global.signin();
+      const response = await createTicket(cookie);
+
+      await request(app)
+        .put(`/api/tickets/${response.body.id}`)
+        .set('Cookie', cookie)
+        .send({
+          title: 'London Event',
+          price: 25,
+        })
+        .expect(200);
+
+      expect(natsWrapper.jsClient.publish).toHaveBeenCalled();
     });
   });
 });

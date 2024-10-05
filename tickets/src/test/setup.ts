@@ -1,8 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import request from 'supertest';
-import { app } from '../app';
 import crypto from 'crypto';
 
 declare global {
@@ -10,6 +8,8 @@ declare global {
 }
 
 let mongo: MongoMemoryServer;
+
+jest.mock('../services/nats-wrapper');
 
 beforeAll(async () => {
   process.env.ACCESS_TOKEN = 'somerandomstring';
@@ -23,6 +23,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  jest.clearAllMocks();
   if (mongoose.connection.db) {
     const collections = await mongoose.connection.db.collections();
 
