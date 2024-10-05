@@ -20,9 +20,9 @@ export class NatsWrapper {
     throw new Error('Cannot access JetStream Manager before connecting.');
   }
 
-  async connect(url: string): Promise<void> {
+  async connect(url: string, name: string): Promise<void> {
     try {
-      this._nc = await connect({ servers: [url] });
+      this._nc = await connect({ servers: [url], name });
       this._jsClient = this.client.jetstream();
       this._jsmClient = await this.client.jetstreamManager();
       console.log('Successfully connected to NATS and initialized JetStream.');
