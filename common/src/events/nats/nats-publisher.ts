@@ -1,9 +1,7 @@
 import {
-  connect,
   DiscardPolicy,
   JetStreamClient,
   JetStreamManager,
-  NatsConnection,
   RetentionPolicy,
   StringCodec,
 } from 'nats';
@@ -43,7 +41,6 @@ export abstract class Publisher<T extends Message> {
 
   async publish(data: T['data']) {
     await this.createPublisher();
-    const sc = StringCodec();
     const stringifiedData = JSON.stringify(data);
     try {
       const pa = await this.js.publish(this.subject, this.sc.encode(stringifiedData));
