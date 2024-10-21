@@ -20,3 +20,5 @@ export * from './events/nats/nats-wrapper';
 export * from './events/nats/subjects';
 export * from './events/nats/messages/ticket-created.message';
 export * from './events/nats/messages/ticket-updated.message';
+
+export * from './events/types/order-status';
