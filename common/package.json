@@ -1,6 +1,6 @@
 {
   "name": "@eventexchange/common",
-  "version": "2.0.11",
+  "version": "2.0.12",
   "description": "A common library to be used by other micro-services in the EventExchange porject",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
