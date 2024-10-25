@@ -1,15 +1,15 @@
 import {
   AckPolicy,
-  connect,
   ConsumerMessages,
   DeliverPolicy,
   JetStreamClient,
   JetStreamManager,
   JsMsg,
-  NatsConnection,
   StringCodec,
 } from 'nats';
 import { Subjects } from './subjects';
+import { STREAMS } from './constants/nats-streams';
+import { DURABLE_NAMES } from './constants/nats-durables';
 
 interface Message {
   subject: Subjects;
@@ -20,14 +20,10 @@ export abstract class Listener<T extends Message> {
   private sc = StringCodec();
   abstract subject: T['subject'];
   abstract onMessage(data: T['data']): void;
-  abstract stream: string;
-  abstract durableName: string;
+  abstract stream: STREAMS;
+  abstract durableName: DURABLE_NAMES;
 
-  constructor(
-    private nc: NatsConnection,
-    private js: JetStreamClient,
-    private jsm: JetStreamManager
-  ) {}
+  constructor(private js: JetStreamClient, private jsm: JetStreamManager) {}
 
   private async createConsumer() {
     const consumerConfig = {
