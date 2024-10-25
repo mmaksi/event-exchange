@@ -40,6 +40,7 @@ export abstract class Publisher<T extends Message> {
   }
 
   async publish(data: T['data']) {
+    console.log(data);
     await this.createPublisher();
     const stringifiedData = JSON.stringify(data);
     try {
