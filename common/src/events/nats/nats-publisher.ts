@@ -6,6 +6,7 @@ import {
   StringCodec,
 } from 'nats';
 import { Subjects } from './subjects';
+import { STREAMS } from './constants/nats-streams';
 
 console.clear();
 
@@ -17,7 +18,7 @@ interface Message {
 export abstract class Publisher<T extends Message> {
   private sc = StringCodec();
   abstract subject: T['subject'];
-  abstract stream: string;
+  abstract stream: STREAMS;
 
   constructor(private js: JetStreamClient, private jsm: JetStreamManager) {}
 
