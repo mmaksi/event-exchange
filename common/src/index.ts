@@ -18,9 +18,13 @@ export * from './events/nats/nats-listener';
 export * from './events/nats/nats-publisher';
 export * from './events/nats/nats-wrapper';
 export * from './events/nats/subjects';
+
 export * from './events/nats/messages/ticket-created.message';
 export * from './events/nats/messages/ticket-updated.message';
 export * from './events/nats/messages/order-created.message';
 export * from './events/nats/messages/order-cancelled.message';
+
+export * from './events/nats/constants/nats-streams';
+export * from './events/nats/constants/nats-durables';
 
 export * from './events/types/order-status';
