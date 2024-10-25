@@ -8,6 +8,8 @@ import { Order } from './orders.mongo';
 import { Ticket } from './ticket.mongo';
 import { OrderBody } from '../../routes/orders/orders.controller';
 import { natsWrapper } from '../../services/nats-wrapper';
+import { OrderCreatedPublisher } from '../../events/publishers/order-created.publisher';
+import { OrderCancelledPublisher } from '../../events/publishers/order-cancelled.publisher';
 
 const EXPIRTATION_WINDOW_SECONDS = 15 * 60;
 
@@ -50,6 +52,16 @@ export async function createOrder(ticketId: string, currentUserId: string) {
   });
   await order.save();
   // Publish an event that an order was created
+  new OrderCreatedPublisher(natsWrapper.jsClient, natsWrapper.jsmManager).publish({
+    id: order.id,
+    status: order.status,
+    userId: order.userId,
+    expiresAt: order.expiresAt,
+    ticket: {
+      id: ticket.id,
+      price: ticket.price,
+    },
+  })
   return order;
 }
 
@@ -57,5 +69,12 @@ export async function cancelOrder(orderId: string, userId: string) {
   const order = await getOrder(orderId, userId);
   order.status = OrderStatus.Cancelled;
   await order.save();
+    // Publish an event that an order was cancelled
+    new OrderCancelledPublisher(natsWrapper.jsClient, natsWrapper.jsmManager).publish({
+      id: order.id,
+      ticket: {
+        id: order.ticket.id,
+      },
+    })
   return order;
 }

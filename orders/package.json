@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/mmaksi/event-exchange#readme",
   "dependencies": {
-    "@eventexchange/common": "^2.0.9",
+    "@eventexchange/common": "^2.0.17",
     "bcryptjs": "^2.4.3",
     "cookie-session": "^2.1.0",
     "csurf": "^1.11.0",

@@ -135,7 +135,15 @@ describe('Orders service', () => {
         .expect(400);
     });
 
-    it.todo('Emits an order created event');
+    it('Emits an order created event', async () => {
+      const ticket = await buildTicket();
+      await request(app)
+        .post('/api/orders')
+        .set('Cookie', global.signin())
+        .send({ ticketId: ticket.id })
+        .expect(201);
+      expect(natsWrapper.jsClient.publish).toHaveBeenCalled();
+    });
   });
 
   describe('DELETE /api/orders/:id', () => {
@@ -161,6 +169,24 @@ describe('Orders service', () => {
       expect(updatedOrder.status).toEqual(OrderStatus.Cancelled);
     });
 
-    it.todo('Emits an order cancelled event');
+    it('Emits an order cancelled event', async () => {
+      // Create a ticket
+      const ticket = await buildTicket();
+      const user = global.signin();
+      // Create an order
+      const { body: createdOrder } = await request(app)
+        .post('/api/orders')
+        .set('Cookie', user)
+        .send({ ticketId: ticket.id })
+        .expect(201);
+
+      // Cancel the order
+      const { body: fetchedOrder } = await request(app)
+        .delete(`/api/orders/${createdOrder.id}`)
+        .set('Cookie', user)
+        .send()
+        .expect(204);
+      expect(natsWrapper.jsClient.publish).toHaveBeenCalled();
+    });
   });
 });
